@@ -1,151 +1,340 @@
+/* Evade Elon — feed the crew, dodge Elon Muscovy (Build-matched) */
 (function () {
   var KEY = "coc-play-evade-elon-best";
+  var W = 340, H = 440;
+  var CREW = [
+    { id: "kneepads", emoji: "🐐", name: "Kneepads", x: 58, y: 118 },
+    { id: "sassy", emoji: "🐐", name: "Sassy", x: 282, y: 128 },
+    { id: "mrna", emoji: "🐐", name: "mRNA", x: 70, y: 300 },
+    { id: "jelly", emoji: "🐰", name: "Jelly", x: 270, y: 290 },
+    { id: "piggy", emoji: "🐷", name: "Piggy", x: 170, y: 96 },
+    { id: "hen", emoji: "🐔", name: "RIR hen", x: 54, y: 210 },
+    { id: "pekin", emoji: "🦆", name: "Pekin", x: 286, y: 210 },
+    { id: "spicy", emoji: "🐓", name: "Spicy", x: 170, y: 348 }
+  ];
+
   var canvas = document.getElementById("canvas");
   var ctx = canvas.getContext("2d");
   var scoreEl = document.getElementById("score");
   var livesEl = document.getElementById("lives");
   var bestEl = document.getElementById("best");
+  var waveEl = document.getElementById("wave");
+  var fedEl = document.getElementById("fed");
   var overlay = document.getElementById("overlay");
   var overlayTitle = document.getElementById("overlay-title");
   var overlayMsg = document.getElementById("overlay-msg");
   var startBtn = document.getElementById("start-btn");
+  var hintEl = document.getElementById("hint");
 
-  var W = canvas.width;
-  var H = canvas.height;
+  canvas.width = W;
+  canvas.height = H;
+
   var running = false;
-  var score = 0;
-  var lives = 3;
-  var player = { x: W / 2, y: H - 48, r: 18 };
-  var elon = { x: W / 2, y: 60, r: 20, vx: 2.2, stealCd: 0 };
-  var grains = [];
-  var keys = {};
-  var pointerX = null;
-  var spawnTimer = 0;
+  var state = null;
   var last = 0;
 
   bestEl.textContent = CrittersPlay.getBest(KEY);
 
-  function reset() {
-    score = 0;
-    lives = 3;
-    player.x = W / 2;
-    elon.x = W / 2;
-    elon.vx = 2.2;
-    elon.stealCd = 0;
-    grains = [];
-    spawnTimer = 0;
-    scoreEl.textContent = "0";
-    livesEl.textContent = "3";
-  }
-
-  function spawnGrain() {
-    grains.push({
-      x: 24 + Math.random() * (W - 48),
-      y: -12,
-      r: 10,
-      vy: 1.4 + Math.random() * 1.6,
-      taken: false
+  function freshCrew() {
+    return CREW.map(function (c) {
+      return { id: c.id, emoji: c.emoji, name: c.name, x: c.x, y: c.y, fed: false, bob: Math.random() * 6 };
     });
   }
 
-  function hit(a, b) {
-    var dx = a.x - b.x;
-    var dy = a.y - b.y;
-    return dx * dx + dy * dy < (a.r + b.r) * (a.r + b.r);
+  function resetState() {
+    state = {
+      px: W / 2, py: H - 70,
+      elonX: W / 2, elonY: H / 2, elonA: 0,
+      grain: 3, crew: freshCrew(),
+      score: 0, lives: 3, steal: 0,
+      pointer: null, keys: {},
+      over: false, invuln: 0, wave: 1,
+      msg: "Feed the crew — dodge Elon!", msgT: 1.6
+    };
+    scoreEl.textContent = "0";
+    livesEl.textContent = "3";
+    if (waveEl) waveEl.textContent = "1";
+    if (fedEl) fedEl.textContent = "0/" + CREW.length;
   }
 
-  function drawBarnBg() {
-    var g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "#2a3a28");
-    g.addColorStop(0.45, "#3d4a30");
-    g.addColorStop(1, "#5a4a30");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = "#4a3a22";
-    ctx.fillRect(0, H - 36, W, 36);
-    ctx.fillStyle = "rgba(201,162,39,0.12)";
-    for (var i = 0; i < 8; i++) {
-      ctx.beginPath();
-      ctx.arc(40 + i * 42, H - 20, 6 + (i % 3), 0, Math.PI * 2);
-      ctx.fill();
+  function drawPasture(e) {
+    var t = e.createLinearGradient(0, 0, 0, H);
+    t.addColorStop(0, "#6ec4ea");
+    t.addColorStop(0.28, "#9fd4a8");
+    t.addColorStop(1, "#3d7a3a");
+    e.fillStyle = t;
+    e.fillRect(0, 0, W, H);
+    e.fillStyle = "#3a8bb0";
+    e.beginPath();
+    e.ellipse(W / 2, 228, 52, 28, 0, 0, Math.PI * 2);
+    e.fill();
+    e.fillStyle = "rgba(255,255,255,0.25)";
+    e.beginPath();
+    e.ellipse(W / 2 - 10, H / 2, 18, 8, -0.3, 0, Math.PI * 2);
+    e.fill();
+    e.strokeStyle = "rgba(20,70,20,0.28)";
+    e.lineWidth = 1.5;
+    for (var i = 0; i < 40; i++) {
+      var n = (i * 47) % W, r = 80 + ((i * 31) % (H - 100));
+      e.beginPath();
+      e.moveTo(n, r);
+      e.lineTo(n + 2, r - 7);
+      e.stroke();
+    }
+    e.fillStyle = "rgba(15,20,12,0.45)";
+    e.fillRect(0, 0, W, 28);
+    e.fillStyle = "#f5e6b8";
+    e.font = "bold 11px sans-serif";
+    e.textAlign = "center";
+    e.fillText("DON'T LET ELON TAKE THE GRAIN", W / 2, 18);
+  }
+
+  /* Canvas Muscovy — dark body, white wing patch, red caruncles, yellow bill */
+  function drawElon(e, x, y, a, steal) {
+    e.save();
+    e.translate(x, y);
+    e.rotate(a);
+    var s = 1 + steal * 0.15;
+    e.scale(s, s);
+    e.fillStyle = "#2a2a32";
+    e.beginPath();
+    e.ellipse(0, 4, 18, 14, 0, 0, Math.PI * 2);
+    e.fill();
+    e.fillStyle = "#ecece8";
+    e.beginPath();
+    e.ellipse(2, 2, 10, 8, 0.1, 0, Math.PI * 2);
+    e.fill();
+    e.fillStyle = "#1c1c22";
+    e.beginPath();
+    e.ellipse(-12, 6, 8, 5, -0.4, 0, Math.PI * 2);
+    e.fill();
+    e.beginPath();
+    e.ellipse(12, 6, 8, 5, 0.4, 0, Math.PI * 2);
+    e.fill();
+    e.fillStyle = "#2e2e36";
+    e.beginPath();
+    e.arc(14, -8, 9, 0, Math.PI * 2);
+    e.fill();
+    e.fillStyle = "#c0392b";
+    e.beginPath();
+    e.ellipse(16, -12, 5, 4, 0.2, 0, Math.PI * 2);
+    e.fill();
+    e.beginPath();
+    e.ellipse(20, -6, 4, 3, 0.4, 0, Math.PI * 2);
+    e.fill();
+    e.fillStyle = "#e8d48b";
+    e.beginPath();
+    e.moveTo(22, -8);
+    e.lineTo(32, -6);
+    e.lineTo(22, -3);
+    e.closePath();
+    e.fill();
+    e.fillStyle = "#f4d03f";
+    e.beginPath();
+    e.arc(16, -9, 2.2, 0, Math.PI * 2);
+    e.fill();
+    e.fillStyle = "#111";
+    e.beginPath();
+    e.arc(16.5, -9, 1, 0, Math.PI * 2);
+    e.fill();
+    e.restore();
+  }
+
+  function drawFarmer(e, x, y, grain) {
+    e.save();
+    e.translate(x, y);
+    e.fillStyle = "rgba(0,0,0,0.25)";
+    e.beginPath();
+    e.ellipse(0, 16, 12, 5, 0, 0, Math.PI * 2);
+    e.fill();
+    e.fillStyle = "#c9a227";
+    e.fillRect(-8, 0, 16, 14);
+    e.fillStyle = "#f0d0b0";
+    e.beginPath();
+    e.arc(0, -6, 8, 0, Math.PI * 2);
+    e.fill();
+    e.fillStyle = "#3d2a14";
+    e.beginPath();
+    e.arc(0, -9, 8, Math.PI, 0);
+    e.fill();
+    e.fillStyle = "#8a6a32";
+    e.fillRect(8, 2, 12, 10);
+    e.strokeStyle = "#c9a227";
+    e.lineWidth = 2;
+    e.strokeRect(8, 2, 12, 10);
+    e.fillStyle = "#e8d48b";
+    e.fillRect(9, 3, 10, Math.max(1, (grain / 3) * 8));
+    e.restore();
+  }
+
+  function tryFeed() {
+    var t = state;
+    if (!t || t.over || !running) return;
+    if (t.grain <= 0) {
+      t.msg = "Empty bucket — grab grain at the barn!";
+      t.msgT = 1.2;
+      return;
+    }
+    for (var i = 0; i < t.crew.length; i++) {
+      var n = t.crew[i];
+      if (!n.fed && Math.hypot(t.px - n.x, t.py - n.y) < 36) {
+        n.fed = true;
+        t.grain -= 1;
+        t.score += 100 + t.wave * 20;
+        scoreEl.textContent = String(t.score);
+        var fedCount = t.crew.filter(function (c) { return c.fed; }).length;
+        if (fedEl) fedEl.textContent = fedCount + "/" + CREW.length;
+        CrittersPlay.setBest(KEY, t.score);
+        bestEl.textContent = String(CrittersPlay.getBest(KEY));
+        t.msg = "Fed " + n.name + "!";
+        t.msgT = 1;
+        if (t.crew.every(function (c) { return c.fed; })) {
+          t.wave += 1;
+          if (waveEl) waveEl.textContent = String(t.wave);
+          t.crew = freshCrew();
+          t.grain = 3;
+          t.score += 250;
+          scoreEl.textContent = String(t.score);
+          if (fedEl) fedEl.textContent = "0/" + CREW.length;
+          CrittersPlay.setBest(KEY, t.score);
+          bestEl.textContent = String(CrittersPlay.getBest(KEY));
+          t.msg = "Wave " + t.wave + " — Elon is hungrier!";
+          t.msgT = 1.6;
+        }
+        return;
+      }
     }
   }
 
-  function drawEmoji(emoji, x, y, size) {
-    ctx.font = size + "px serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(emoji, x, y);
+  function toCanvas(e) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (W / rect.width),
+      y: (e.clientY - rect.top) * (H / rect.height)
+    };
+  }
+
+  function endGame() {
+    running = false;
+    state.over = true;
+    state.pointer = null;
+    var best = CrittersPlay.setBest(KEY, state.score);
+    bestEl.textContent = String(best);
+    overlayTitle.textContent = "Elon ate the shift";
+    overlayMsg.textContent = "Score " + state.score + " · Best " + best + ". The Muscovy won this round — refill and try again.";
+    startBtn.textContent = "Dodge again";
+    overlay.classList.remove("hidden");
+    if (hintEl) hintEl.style.visibility = "hidden";
   }
 
   function update(dt) {
-    if (!running) return;
-    var speed = 220 * dt;
-    if (keys["ArrowLeft"] || keys["a"] || keys["A"]) player.x -= speed;
-    if (keys["ArrowRight"] || keys["d"] || keys["D"]) player.x += speed;
-    if (pointerX != null) {
-      var dx = pointerX - player.x;
-      player.x += Math.max(-speed * 1.4, Math.min(speed * 1.4, dx));
+    var s = state;
+    if (!running || !s || s.over) return;
+    if (s.invuln > 0) s.invuln -= dt;
+    if (s.steal > 0) s.steal = Math.max(0, s.steal - dt * 2);
+    if (s.msgT > 0) s.msgT -= dt;
+
+    var tx = 0, ty = 0;
+    var k = s.keys;
+    if (k.arrowleft || k.a) tx -= 1;
+    if (k.arrowright || k.d) tx += 1;
+    if (k.arrowup || k.w) ty -= 1;
+    if (k.arrowdown || k.s) ty += 1;
+    if (s.pointer) {
+      var dx = s.pointer.x - s.px, dy = s.pointer.y - s.py;
+      var dist = Math.hypot(dx, dy);
+      if (dist > 6) { tx = dx / dist; ty = dy / dist; }
     }
-    player.x = Math.max(player.r, Math.min(W - player.r, player.x));
-
-    elon.x += elon.vx;
-    if (elon.x < elon.r || elon.x > W - elon.r) elon.vx *= -1;
-    elon.vx += (Math.random() - 0.5) * 0.08;
-    elon.vx = Math.max(-3.5, Math.min(3.5, elon.vx));
-    if (elon.stealCd > 0) elon.stealCd -= dt;
-
-    spawnTimer -= dt;
-    if (spawnTimer <= 0) {
-      spawnGrain();
-      spawnTimer = Math.max(0.45, 1.1 - score * 0.008);
+    if (tx || ty) {
+      var len = Math.hypot(tx, ty) || 1;
+      s.px = Math.max(22, Math.min(W - 22, s.px + (tx / len) * 150 * dt));
+      s.py = Math.max(50, Math.min(H - 28, s.py + (ty / len) * 150 * dt));
     }
 
-    for (var i = grains.length - 1; i >= 0; i--) {
-      var g = grains[i];
-      g.y += g.vy;
-      if (g.y > H + 20) {
-        grains.splice(i, 1);
-        continue;
+    if (Math.hypot(s.px - W / 2, s.py - 64) < 32 && s.grain < 3) {
+      s.grain = 3;
+      s.msg = "Bucket refilled";
+      s.msgT = 0.8;
+    }
+
+    var cx = s.px - s.elonX, cy = s.py - s.elonY;
+    var fl = Math.hypot(cx, cy) || 1;
+    var spd = 72 + s.wave * 18;
+    s.elonX += (cx / fl) * spd * dt;
+    s.elonY += (cy / fl) * spd * dt;
+    s.elonA = Math.atan2(cy, cx);
+
+    if (s.invuln <= 0 && Math.hypot(s.px - s.elonX, s.py - s.elonY) < 32) {
+      s.steal = 1;
+      s.invuln = 1.2;
+      if (s.grain > 0) {
+        s.grain -= 1;
+        s.msg = "Elon stole the grain!";
+        s.msgT = 1.2;
+      } else {
+        s.lives -= 1;
+        livesEl.textContent = String(s.lives);
+        s.msg = "Elon got you!";
+        s.msgT = 1.2;
+        if (s.lives <= 0) endGame();
       }
-      if (!g.taken && hit(player, g)) {
-        g.taken = true;
-        score += 10;
-        scoreEl.textContent = String(score);
-        grains.splice(i, 1);
-        continue;
-      }
-      if (!g.taken && hit(elon, g)) {
-        grains.splice(i, 1);
-        if (elon.stealCd <= 0) {
-          score = Math.max(0, score - 5);
-          scoreEl.textContent = String(score);
-          elon.stealCd = 0.35;
-        }
-        continue;
-      }
     }
-
-    if (elon.stealCd <= 0 && hit(player, elon)) {
-      lives -= 1;
-      livesEl.textContent = String(lives);
-      elon.stealCd = 1.2;
-      elon.x = elon.x < W / 2 ? W - 40 : 40;
-      if (lives <= 0) endGame();
-    }
+    for (var i = 0; i < s.crew.length; i++) s.crew[i].bob += dt * 2;
   }
 
   function draw() {
-    drawBarnBg();
-    for (var i = 0; i < grains.length; i++) {
-      drawEmoji("🌾", grains[i].x, grains[i].y, 22);
+    var s = state;
+    if (!s) return;
+    var e = ctx;
+    drawPasture(e);
+    e.fillStyle = "#6b4226";
+    e.fillRect(W / 2 - 28, 48, 56, 18);
+    e.fillStyle = "#e8d48b";
+    e.fillRect(W / 2 - 24, 50, 48, 10);
+    e.fillStyle = "#fde68a";
+    e.font = "bold 9px sans-serif";
+    e.textAlign = "center";
+    e.fillText("GRAIN", W / 2, 46);
+
+    for (var i = 0; i < s.crew.length; i++) {
+      var t = s.crew[i];
+      var n = t.y + Math.sin(t.bob) * 2;
+      e.globalAlpha = t.fed ? 0.4 : 1;
+      e.font = "26px serif";
+      e.textAlign = "center";
+      e.textBaseline = "middle";
+      e.fillText(t.emoji, t.x, n);
+      e.font = "bold 8px sans-serif";
+      e.fillStyle = t.fed ? "#86efac" : "#fde68a";
+      e.fillText(t.fed ? "fed ✓" : t.name, t.x, n + 18);
+      if (!t.fed) {
+        e.strokeStyle = "rgba(201,162,39,0.45)";
+        e.lineWidth = 1.5;
+        e.beginPath();
+        e.arc(t.x, n, 22, 0, Math.PI * 2);
+        e.stroke();
+      }
+      e.globalAlpha = 1;
     }
-    drawEmoji("🦆", elon.x, elon.y, 36);
-    ctx.fillStyle = "rgba(196,92,74,0.85)";
-    ctx.font = "bold 10px DM Sans, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("ELON", elon.x, elon.y - 24);
-    drawEmoji("🧑‍🌾", player.x, player.y, 34);
+
+    drawElon(e, s.elonX, s.elonY, s.elonA, s.steal);
+    if (s.invuln > 0 && Math.floor(s.invuln * 10) % 2 === 0) e.globalAlpha = 0.45;
+    drawFarmer(e, s.px, s.py, s.grain);
+    e.globalAlpha = 1;
+
+    if (s.msgT > 0) {
+      e.fillStyle = "rgba(253,230,138," + Math.min(1, s.msgT) + ")";
+      e.font = "bold 13px sans-serif";
+      e.textAlign = "center";
+      e.fillText(s.msg, W / 2, H - 16);
+    }
+    e.fillStyle = "#e8d48b";
+    e.font = "bold 11px sans-serif";
+    e.textAlign = "left";
+    e.textBaseline = "alphabetic";
+    e.fillText("Grain " + s.grain + "/3", 8, H - 8);
+    e.textAlign = "right";
+    e.fillText("❤ " + s.lives, W - 8, H - 8);
   }
 
   function loop(ts) {
@@ -157,51 +346,45 @@
     requestAnimationFrame(loop);
   }
 
-  function endGame() {
-    running = false;
-    pointerX = null;
-    var best = CrittersPlay.setBest(KEY, score);
-    bestEl.textContent = String(best);
-    overlayTitle.textContent = "Grain raid over";
-    overlayMsg.textContent = "Score " + score + " · Best " + best + ". Elon Muscovy wins this round.";
-    startBtn.textContent = "Play again";
-    overlay.classList.remove("hidden");
-  }
-
   function start() {
-    reset();
+    resetState();
     overlay.classList.add("hidden");
     running = true;
     last = 0;
+    if (hintEl) hintEl.style.visibility = "visible";
   }
 
   startBtn.addEventListener("click", start);
 
   window.addEventListener("keydown", function (e) {
-    keys[e.key] = true;
+    var t = e.key.toLowerCase();
+    if (["arrowleft", "arrowright", "arrowup", "arrowdown", "w", "a", "s", "d"].indexOf(t) >= 0) {
+      e.preventDefault();
+      if (state) state.keys[t] = true;
+    }
     if ((e.key === "Enter" || e.key === " ") && !running) {
       e.preventDefault();
       start();
     }
   });
-  window.addEventListener("keyup", function (e) { keys[e.key] = false; });
+  window.addEventListener("keyup", function (e) {
+    if (state) state.keys[e.key.toLowerCase()] = false;
+  });
 
-  function pointer(clientX) {
-    var rect = canvas.getBoundingClientRect();
-    pointerX = ((clientX - rect.left) / rect.width) * W;
-  }
   canvas.addEventListener("pointerdown", function (e) {
     if (!running) return;
     canvas.setPointerCapture(e.pointerId);
-    pointer(e.clientX);
+    state.pointer = toCanvas(e);
+    tryFeed();
   });
   canvas.addEventListener("pointermove", function (e) {
-    if (!running || pointerX == null) return;
-    pointer(e.clientX);
+    if (!running || !state) return;
+    if (e.buttons || e.pressure > 0) state.pointer = toCanvas(e);
   });
-  canvas.addEventListener("pointerup", function () { pointerX = null; });
-  canvas.addEventListener("pointercancel", function () { pointerX = null; });
+  canvas.addEventListener("pointerup", function () { if (state) state.pointer = null; });
+  canvas.addEventListener("pointercancel", function () { if (state) state.pointer = null; });
 
+  resetState();
   draw();
   requestAnimationFrame(loop);
 })();

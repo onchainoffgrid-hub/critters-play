@@ -28,20 +28,39 @@
   </header>
   <main class="main">
     <div class="game-shell">
+      <p class="game-lede text-sm muted">Match Sophie (Great Pyrenees), tuxedo barn cat, Pekin duck, Toulouse goose, Rhode Island Red hen, dwarf goats, piggy &amp; bunnies to their names and facts.</p>
       <div class="game-hud">
         <div class="hud-stat"><span class="hud-label">Score</span><span class="hud-value tabular" id="score">0</span></div>
-        <div class="hud-stat"><span class="hud-label">Moves</span><span class="hud-value tabular" id="moves">0</span></div>
+        <div class="hud-stat"><span class="hud-label">Streak</span><span class="hud-value tabular" id="streak">0</span></div>
+        <div class="hud-stat"><span class="hud-label">Miss</span><span class="hud-value tabular" id="miss">0</span></div>
         <div class="hud-stat"><span class="hud-label">Best</span><span class="hud-value tabular" id="best">0</span></div>
       </div>
-      <div class="game-stage" id="stage">
-        <div class="match-grid" id="grid" aria-label="Match board"></div>
-        <div class="game-overlay" id="overlay">
-          <h2 id="overlay-title">Critter Match</h2>
-          <p id="overlay-msg">Flip two cards. Match the homestead roster — names, breeds, and farm friends.</p>
-          <button type="button" class="btn btn-primary" id="start-btn">Start</button>
+      <div class="cm-play" id="play-area">
+        <div>
+          <p class="text-xs muted" style="margin-bottom:0.5rem">1 · Tap a critter</p>
+          <div class="cm-critters" id="critters"></div>
+        </div>
+        <div>
+          <p class="text-xs muted" style="margin-bottom:0.5rem">2 · Tap the matching name &amp; fact</p>
+          <div class="cm-facts" id="facts"></div>
         </div>
       </div>
-      <p class="game-hint">Fewer moves = higher score · best saved on this device</p>
+      <div class="game-stage cm-ready-stage" id="stage">
+        <div class="game-overlay" id="overlay" style="position:relative;min-height:16rem;border-radius:1rem;border:1px solid var(--border)">
+          <div class="cm-ready-avatars">
+            <img src="assets/sophie.png" alt="Sophie" width="56" height="56" />
+            <span aria-hidden="true">🐐🐱🦆🪿🐔🐷🐰</span>
+          </div>
+          <h2 id="overlay-title">Critter Match</h2>
+          <p id="overlay-msg">Match Sophie the Great Pyrenees, tuxedo barn cat, Pekin duck, Toulouse goose, Rhode Island Red hen, dwarf goats, piggy &amp; bunnies to their names and facts.</p>
+          <div class="cm-chips">
+            <span>Sophie</span><span>Tuxedo cat</span><span>Pekin</span><span>Toulouse</span><span>RIR hen</span><span>Dwarf goat</span><span>Piggy</span><span>Bunny</span>
+          </div>
+          <button type="button" class="btn btn-primary btn-block" id="start-btn">Start matching</button>
+        </div>
+      </div>
+      <p class="game-hint" id="hint" style="visibility:hidden">Tap a critter, then tap the matching name &amp; fact</p>
+      <div id="done" class="hidden"></div>
     </div>
   </main>
 </div>

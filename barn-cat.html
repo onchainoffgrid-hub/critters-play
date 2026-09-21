@@ -28,20 +28,24 @@
   </header>
   <main class="main">
     <div class="game-shell">
+      <p class="game-lede text-sm muted">Tuxedo barn cat — whack mice &amp; snakes as they pop from the hay.</p>
       <div class="game-hud">
         <div class="hud-stat"><span class="hud-label">Score</span><span class="hud-value tabular" id="score">0</span></div>
-        <div class="hud-stat"><span class="hud-label">Time</span><span class="hud-value tabular" id="time">30</span></div>
+        <div class="hud-stat"><span class="hud-label">Wave</span><span class="hud-value tabular" id="wave">1</span></div>
+        <div class="hud-stat"><span class="hud-label">Combo</span><span class="hud-value tabular" id="combo">0</span></div>
+        <div class="hud-stat"><span class="hud-label">Lives</span><span class="hud-value tabular" id="lives">3</span></div>
         <div class="hud-stat"><span class="hud-label">Best</span><span class="hud-value tabular" id="best">0</span></div>
       </div>
       <div class="game-stage" id="stage">
-        <div class="mole-grid" id="grid" aria-label="Hay holes"></div>
+        <canvas id="canvas" width="340" height="420" aria-label="Barn Cat Defender game"></canvas>
         <div class="game-overlay" id="overlay">
+          <div class="overlay-badge" aria-hidden="true">🐈‍⬛</div>
           <h2 id="overlay-title">Barn Cat Defender</h2>
-          <p id="overlay-msg">Sophie the tuxedo cat needs you. Tap mice 🐭 and snakes 🐍 — don’t bonk the kitten 🐱!</p>
-          <button type="button" class="btn btn-primary" id="start-btn">Start</button>
+          <p id="overlay-msg">Tuxedo barn cat vs mice &amp; snakes. Tap pests as they pop from the hay holes. Snakes are worth more.</p>
+          <button type="button" class="btn btn-primary" id="start-btn">Start watch</button>
         </div>
       </div>
-      <p class="game-hint">Tap pests for points · miss a snake and lose time</p>
+      <p class="game-hint" id="hint">Tap a hole the instant a mouse or snake pops up</p>
     </div>
   </main>
 </div>

@@ -28,20 +28,33 @@
   </header>
   <main class="main">
     <div class="game-shell">
+      <p class="game-lede text-sm muted">Sophie the Great Pyrenees protects Kneepads, Sassy, mRNA, Jelly Roll, Spicy &amp; Elon Muscovy from foxes, raccoons, hawks &amp; coyotes.</p>
       <div class="game-hud">
         <div class="hud-stat"><span class="hud-label">Score</span><span class="hud-value tabular" id="score">0</span></div>
-        <div class="hud-stat"><span class="hud-label">Barn HP</span><span class="hud-value tabular" id="hp">10</span></div>
+        <div class="hud-stat"><span class="hud-label">Wave</span><span class="hud-value tabular" id="wave">1</span></div>
+        <div class="hud-stat"><span class="hud-label">Lives</span><span class="hud-value tabular" id="lives">3</span></div>
         <div class="hud-stat"><span class="hud-label">Best</span><span class="hud-value tabular" id="best">0</span></div>
       </div>
+      <p class="game-msg" id="msg"></p>
       <div class="game-stage" id="stage">
-        <canvas id="canvas" width="360" height="480" aria-label="Pyrenees Guard game"></canvas>
+        <canvas id="canvas" width="340" height="440" aria-label="Pyrenees Guard game"></canvas>
         <div class="game-overlay" id="overlay">
           <h2 id="overlay-title">Pyrenees Guard</h2>
-          <p id="overlay-msg">Sophie, Gus &amp; Betty hold the red barn under the live oak. Tap coyotes &amp; foxes before they reach the doors.</p>
-          <button type="button" class="btn btn-primary" id="start-btn">Start</button>
+          <p id="overlay-msg">Pick your guardian. Unlock Gus at 250 · Betty at 500.</p>
+          <div class="guard-picker" id="picker"></div>
+          <p class="guard-blurb text-xs muted" id="blurb"></p>
+          <button type="button" class="btn btn-primary btn-block" id="start-btn">Start watch — Sophie</button>
         </div>
       </div>
-      <p class="game-hint">Tap approaching threats · dogs auto-patrol the fence line</p>
+      <div class="guard-controls" id="controls" aria-label="Movement controls">
+        <button type="button" class="btn btn-ghost" id="nudge-l">←</button>
+        <button type="button" class="btn btn-primary" id="bark-btn">Bark!</button>
+        <button type="button" class="btn btn-ghost" id="nudge-r">→</button>
+        <button type="button" class="btn btn-ghost" id="nudge-u">↑</button>
+        <button type="button" class="btn btn-ghost" id="nudge-d">↓</button>
+        <button type="button" class="btn btn-ghost" id="nudge-c">Center</button>
+      </div>
+      <p class="game-hint" id="hint" style="visibility:hidden">Drag Sophie · WASD · Space / Bark</p>
     </div>
   </main>
 </div>

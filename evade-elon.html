@@ -28,20 +28,24 @@
   </header>
   <main class="main">
     <div class="game-shell">
+      <p class="game-lede text-sm muted">Feed the crew. Dodge Elon Muscovy. He thinks he owns the pasture.</p>
       <div class="game-hud">
         <div class="hud-stat"><span class="hud-label">Score</span><span class="hud-value tabular" id="score">0</span></div>
+        <div class="hud-stat"><span class="hud-label">Wave</span><span class="hud-value tabular" id="wave">1</span></div>
+        <div class="hud-stat"><span class="hud-label">Fed</span><span class="hud-value tabular" id="fed">0/8</span></div>
         <div class="hud-stat"><span class="hud-label">Lives</span><span class="hud-value tabular" id="lives">3</span></div>
         <div class="hud-stat"><span class="hud-label">Best</span><span class="hud-value tabular" id="best">0</span></div>
       </div>
       <div class="game-stage" id="stage">
-        <canvas id="canvas" width="360" height="480" aria-label="Evade Elon game"></canvas>
+        <canvas id="canvas" width="340" height="440" aria-label="Evade Elon game"></canvas>
         <div class="game-overlay" id="overlay">
+          <p class="overlay-emoji" aria-hidden="true">🦆</p>
           <h2 id="overlay-title">Evade Elon</h2>
-          <p id="overlay-msg">Move to scoop grain for the ducks. Dodge Elon Muscovy — he steals your haul!</p>
-          <button type="button" class="btn btn-primary" id="start-btn">Start</button>
+          <p id="overlay-msg">Drag to move. Get close and tap to feed Kneepads, Sassy, mRNA, Jelly, Piggy &amp; crew. Elon Muscovy steals your grain if he catches you. Refill at the GRAIN trough.</p>
+          <button type="button" class="btn btn-primary" id="start-btn">Start feeding</button>
         </div>
       </div>
-      <p class="game-hint">Drag / tap to move · arrow keys or A/D on keyboard</p>
+      <p class="game-hint" id="hint">Drag to run · tap near a hungry animal to feed · refill at GRAIN</p>
     </div>
   </main>
 </div>
