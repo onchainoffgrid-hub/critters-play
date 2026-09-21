@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#c9a227" />
+<meta name="description" content="Pyrenees Guard — Sophie, Gus & Betty defend the red barn. Critters on Call Play." />
+<title>Pyrenees Guard · Critters on Call Play</title>
+<link rel="icon" type="image/png" href="assets/pyrenees-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="app">
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="assets/pyrenees-logo.png" alt="" width="36" height="36" />
+        <span class="min-w-0">
+          <span class="brand-title">Pyrenees Guard</span>
+          <span class="brand-sub">Critters on Call Play</span>
+        </span>
+      </a>
+      <a class="back-link" href="index.html">← Hub</a>
+    </div>
+  </header>
+  <main class="main">
+    <div class="game-shell">
+      <div class="game-hud">
+        <div class="hud-stat"><span class="hud-label">Score</span><span class="hud-value tabular" id="score">0</span></div>
+        <div class="hud-stat"><span class="hud-label">Barn HP</span><span class="hud-value tabular" id="hp">10</span></div>
+        <div class="hud-stat"><span class="hud-label">Best</span><span class="hud-value tabular" id="best">0</span></div>
+      </div>
+      <div class="game-stage" id="stage">
+        <canvas id="canvas" width="360" height="480" aria-label="Pyrenees Guard game"></canvas>
+        <div class="game-overlay" id="overlay">
+          <h2 id="overlay-title">Pyrenees Guard</h2>
+          <p id="overlay-msg">Sophie, Gus &amp; Betty hold the red barn under the live oak. Tap coyotes &amp; foxes before they reach the doors.</p>
+          <button type="button" class="btn btn-primary" id="start-btn">Start</button>
+        </div>
+      </div>
+      <p class="game-hint">Tap approaching threats · dogs auto-patrol the fence line</p>
+    </div>
+  </main>
+</div>
+<script src="js/scores.js"></script>
+<script src="js/pyrenees-guard.js"></script>
+</body>
+</html>
