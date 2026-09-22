@@ -46,13 +46,13 @@
       px: W / 2, py: H - 70,
       elonX: W / 2, elonY: H / 2, elonA: 0,
       grain: 3, crew: freshCrew(),
-      score: 0, lives: 3, steal: 0,
+      score: 0, lives: 5, steal: 0,
       pointer: null, keys: {},
       over: false, invuln: 0, wave: 1,
       msg: "Feed the crew — dodge Elon!", msgT: 1.6
     };
     scoreEl.textContent = "0";
-    livesEl.textContent = "3";
+    livesEl.textContent = "5";
     if (waveEl) waveEl.textContent = "1";
     if (fedEl) fedEl.textContent = "0/" + CREW.length;
   }
@@ -259,14 +259,14 @@
 
     var cx = s.px - s.elonX, cy = s.py - s.elonY;
     var fl = Math.hypot(cx, cy) || 1;
-    var spd = 72 + s.wave * 18;
+    var spd = 55 + s.wave * 12;
     s.elonX += (cx / fl) * spd * dt;
     s.elonY += (cy / fl) * spd * dt;
     s.elonA = Math.atan2(cy, cx);
 
     if (s.invuln <= 0 && Math.hypot(s.px - s.elonX, s.py - s.elonY) < 32) {
       s.steal = 1;
-      s.invuln = 1.2;
+      s.invuln = 1.8;
       if (s.grain > 0) {
         s.grain -= 1;
         s.msg = "Elon stole the grain!";

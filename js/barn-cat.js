@@ -202,14 +202,14 @@
   function resetState() {
     state = {
       holes: makeHoles(),
-      score: 0, lives: 3, combo: 0,
-      spawnAcc: 0, spawnEvery: 900,
+      score: 0, lives: 5, combo: 0,
+      spawnAcc: 0, spawnEvery: 1200,
       wave: 1, waveAcc: 0, over: false,
       swat: 0, catX: W / 2, catY: H - 58,
       pop: "", popT: 0
     };
     scoreEl.textContent = "0";
-    livesEl.textContent = "3";
+    livesEl.textContent = "5";
     if (waveEl) waveEl.textContent = "1";
     if (comboEl) comboEl.textContent = "0";
   }
@@ -273,14 +273,14 @@
         t.pest = Math.random() < 0.22 ? "snake" : "mouse";
         t.rise = 0;
         t.rising = true;
-        t.life = Math.max(0.55, 1.35 - s.wave * 0.08);
+        t.life = Math.max(0.75, 1.55 - s.wave * 0.05);
       }
     }
     s.waveAcc += dt;
-    if (s.waveAcc > 16) {
+    if (s.waveAcc > 22) {
       s.waveAcc = 0;
       s.wave += 1;
-      s.spawnEvery = Math.max(380, s.spawnEvery - 70);
+      s.spawnEvery = Math.max(520, s.spawnEvery - 45);
       if (waveEl) waveEl.textContent = String(s.wave);
     }
 

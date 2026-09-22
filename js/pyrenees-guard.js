@@ -248,7 +248,7 @@
       id: state.idSeq++,
       kind: kind,
       x: r, y: i,
-      speed: n.speed * (1 + (state.wave - 1) * 0.12),
+      speed: n.speed * (1 + (state.wave - 1) * 0.08),
       hp: n.hp,
       scared: false,
       scareT: 0
@@ -288,12 +288,12 @@
     var g = currentGuard();
     state = {
       dogX: W / 2, dogY: H * 0.55, face: 1,
-      preds: [], score: 0, wave: 1, lives: 3,
-      spawnAcc: 0, spawnEvery: 2200, waveAcc: 0,
+      preds: [], score: 0, wave: 1, lives: 5,
+      spawnAcc: 0, spawnEvery: 2800, waveAcc: 0,
       over: false, barkPulse: 0, keys: {}, pointer: null, idSeq: 1
     };
     scoreEl.textContent = "0";
-    livesEl.textContent = "3";
+    livesEl.textContent = "5";
     if (waveEl) waveEl.textContent = "1";
     setMsg(g.name + " is on watch — protect the herd!");
   }
@@ -354,10 +354,10 @@
       spawnPred();
     }
     o.waveAcc += dt;
-    if (o.waveAcc > 18) {
+    if (o.waveAcc > 24) {
       o.waveAcc = 0;
       o.wave += 1;
-      o.spawnEvery = Math.max(900, o.spawnEvery - 180);
+      o.spawnEvery = Math.max(1200, o.spawnEvery - 120);
       if (waveEl) waveEl.textContent = String(o.wave);
       setMsg("Wave " + o.wave);
     }
