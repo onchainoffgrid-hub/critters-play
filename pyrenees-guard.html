@@ -36,11 +36,12 @@
         <div class="hud-stat"><span class="hud-label">Best</span><span class="hud-value tabular" id="best">0</span></div>
       </div>
       <p class="game-msg" id="msg"></p>
+      <p class="cap-note text-xs muted" id="cap-note" aria-live="polite"></p>
       <div class="game-stage" id="stage">
         <canvas id="canvas" width="340" height="440" aria-label="Pyrenees Guard game"></canvas>
         <div class="game-overlay" id="overlay">
           <h2 id="overlay-title">Pyrenees Guard</h2>
-          <p id="overlay-msg">Pick your guardian. Unlock Gus at 250 · Betty at 500.</p>
+          <p id="overlay-msg">Pick your guardian. Play as Sophie · unlock Gus at 250 · Betty at 500.</p>
           <div class="guard-picker" id="picker"></div>
           <p class="guard-blurb text-xs muted" id="blurb"></p>
           <button type="button" class="btn btn-primary btn-block" id="start-btn">Start watch — Sophie</button>
@@ -61,12 +62,13 @@
 </div>
 <div class="earn-modal hidden" id="earn-modal" aria-hidden="true" role="dialog" aria-labelledby="earn-title">
   <div class="earn-modal-card">
-    <p class="earn-modal-emoji" aria-hidden="true">🎡</p>
-    <h2 id="earn-title">You earned a spin — claim it</h2>
-    <p id="earn-body" class="earn-modal-body">Gus unlocked. Spin the prize wheel now on this device — or text GUS from the field / QR path.</p>
+    <p class="earn-modal-emoji" aria-hidden="true">🏅</p>
+    <p class="aptitude-badge" id="earn-aptitude" hidden></p>
+    <h2 id="earn-title">You earned an award</h2>
+    <p id="earn-body" class="earn-modal-body">Text HIGH SCORE to 914-263-1311 with your screenshot.</p>
     <div class="earn-modal-actions">
-      <a class="btn btn-primary btn-block" id="earn-wheel" href="https://onchainoffgrid-hub.github.io/critters-on-call/wheel.html?earn=gus" rel="noopener">🎡 Spin now</a>
-      <a class="btn btn-outline btn-block" id="earn-sms" href="sms:9142631311?&body=GUS">Text GUS to claim</a>
+      <a class="btn btn-primary btn-block" id="earn-sms" href="sms:9142631311?&body=HIGH%20SCORE">Text HIGH SCORE to 914-263-1311</a>
+      <a class="btn btn-outline btn-block" id="earn-wheel" href="https://onchainoffgrid-hub.github.io/critters-on-call/wheel.html" rel="noopener" hidden>🎡 Claim free spin</a>
       <button type="button" class="btn btn-ghost btn-block" id="earn-keep">Keep playing</button>
     </div>
   </div>

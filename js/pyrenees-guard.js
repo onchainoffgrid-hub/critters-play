@@ -82,38 +82,76 @@
   var earnWheel = document.getElementById("earn-wheel");
   var earnKeep = document.getElementById("earn-keep");
   var claimChip = document.getElementById("claim-chip");
+  var earnAptitude = document.getElementById("earn-aptitude");
+  var capNote = document.getElementById("cap-note");
   var toastTimer = null;
   var pausedForEarn = false;
   var pendingEarnDog = null;
+  var sophieAwardShown = false;
 
-  function flashUnlockToast(name) {
-    setMsg(name + " unlocked! You earned a spin — claim it.");
+  function flashUnlockToast(name, title) {
+    var msg = name + " unlocked!";
+    if (title) msg += " · " + title;
+    msg += " Text HIGH SCORE to claim.";
+    setMsg(msg);
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(function () {
       if (running && state && !state.over) setMsg(currentGuard().name + " is on watch");
     }, 3200);
   }
 
-  function showEarnModal(dogId) {
+  function updateCapNote() {
+    if (!capNote || !window.CrittersPlay || !CrittersPlay.playsRemainingToday) return;
+    var g = currentGuard();
+    var left = CrittersPlay.playsRemainingToday(g.id);
+    capNote.textContent = g.name + ": " + left + " play" + (left === 1 ? "" : "s") + " left today (max " + CrittersPlay.PLAYS_PER_CHAR_PER_DAY + "/day)";
+  }
+
+  function showWinModal(opts) {
     if (!earnModal || !window.CrittersPlay) return;
-    var dog = String(dogId || "").toLowerCase();
-    if (dog !== "gus" && dog !== "betty") return;
-    var name = dog === "gus" ? "Gus" : "Betty";
-    var kw = dog.toUpperCase();
+    opts = opts || {};
+    var dog = String(opts.dogId || "").toLowerCase();
+    var apt = CrittersPlay.getAptitude ? CrittersPlay.getAptitude(dog) : null;
+    if (apt && CrittersPlay.grantAptitudeAward) CrittersPlay.grantAptitudeAward(dog);
+    var name = CrittersPlay.earnDisplayName ? CrittersPlay.earnDisplayName(dog) : dog;
+    var title = apt ? apt.title : "";
+    var score = typeof opts.score === "number" ? opts.score : (state ? state.score : 0);
     pendingEarnDog = dog;
-    if (earnTitle) earnTitle.textContent = "You earned a spin — claim it";
-    if (earnBody) {
-      earnBody.textContent =
-        name + " unlocked. Spin the prize wheel now on this device — or text " +
-        kw + " to 914-263-1311 for the field / QR path.";
+
+    if (earnAptitude) {
+      if (title) {
+        earnAptitude.hidden = false;
+        earnAptitude.textContent = "🏅 " + title;
+      } else {
+        earnAptitude.hidden = true;
+        earnAptitude.textContent = "";
+      }
     }
-    if (earnWheel) {
-      earnWheel.textContent = "🎡 Spin now";
-      earnWheel.href = CrittersPlay.wheelEarnUrl(dog);
+    if (earnTitle) {
+      earnTitle.textContent = title ? ("Awarded: " + title) : "Nice run!";
+    }
+    if (earnBody) {
+      var body = name + (title ? (" — " + title + ".") : ".");
+      if (opts.unlocked) body += " Character unlocked.";
+      body += " Screenshot your score and text HIGH SCORE to 914-263-1311.";
+      if (opts.spinReady) body += " You also earned a free Wheel spin (1 claim/day).";
+      else if (opts.spinDeferred) body += " Spin claim used today — try again tomorrow.";
+      earnBody.textContent = body;
     }
     if (earnSms) {
-      earnSms.textContent = "Text " + kw + " to claim";
-      earnSms.href = CrittersPlay.smsHref(kw);
+      earnSms.textContent = "Text HIGH SCORE to 914-263-1311";
+      earnSms.href = CrittersPlay.gameSmsHref
+        ? CrittersPlay.gameSmsHref(score, dog)
+        : CrittersPlay.smsHref(CrittersPlay.GAME_SMS_KEYWORD || "HIGH SCORE");
+    }
+    if (earnWheel) {
+      if (opts.spinReady && (dog === "gus" || dog === "betty")) {
+        earnWheel.hidden = false;
+        earnWheel.textContent = "🎡 Claim free spin";
+        earnWheel.href = CrittersPlay.wheelEarnUrl(dog);
+      } else {
+        earnWheel.hidden = true;
+      }
     }
     if (running && state && !state.over) {
       pausedForEarn = true;
@@ -123,6 +161,26 @@
     }
     earnModal.classList.remove("hidden");
     earnModal.setAttribute("aria-hidden", "false");
+  }
+
+  function showEarnModal(dogId) {
+    var dog = String(dogId || "").toLowerCase();
+    if (dog !== "gus" && dog !== "betty" && dog !== "sophie") return;
+    var spinReady = false;
+    var spinDeferred = false;
+    if ((dog === "gus" || dog === "betty") && window.CrittersPlay) {
+      var unclaimed = CrittersPlay.hasUnclaimedEarn && CrittersPlay.hasUnclaimedEarn(dog);
+      var canDay = !CrittersPlay.canClaimSpinToday || CrittersPlay.canClaimSpinToday();
+      spinReady = !!(unclaimed && canDay);
+      spinDeferred = !!(unclaimed && !canDay);
+    }
+    showWinModal({
+      dogId: dog,
+      unlocked: dog === "gus" || dog === "betty",
+      spinReady: spinReady,
+      spinDeferred: spinDeferred,
+      score: state ? state.score : 0
+    });
   }
 
   function hideEarnModal() {
@@ -138,11 +196,15 @@
       setMsg(currentGuard().name + " is back on watch");
     }
     updateClaimChip();
+    updateCapNote();
   }
 
   function updateClaimChip() {
     if (!claimChip || !window.CrittersPlay) return;
-    var unclaimed = CrittersPlay.getUnclaimedEarns ? CrittersPlay.getUnclaimedEarns() : [];
+    var unclaimed = CrittersPlay.getClaimableEarnsToday
+      ? CrittersPlay.getClaimableEarnsToday()
+      : (CrittersPlay.getUnclaimedEarns ? CrittersPlay.getUnclaimedEarns() : []);
+    unclaimed = unclaimed.filter(function (e) { return e && (e.dog === "gus" || e.dog === "betty"); });
     if (!unclaimed.length) {
       claimChip.classList.add("hidden");
       claimChip.innerHTML = "";
@@ -156,7 +218,7 @@
       var a = document.createElement("a");
       a.className = "claim-chip-link";
       a.href = CrittersPlay.wheelEarnUrl(dog);
-      a.textContent = "You earned a spin — claim it · " + name;
+      a.textContent = "Spin ready · " + name;
       claimChip.appendChild(a);
     });
   }
@@ -175,8 +237,12 @@
         if (window.CrittersPlay && CrittersPlay.grantWheelSpin) {
           CrittersPlay.grantWheelSpin(id);
         }
+        if (window.CrittersPlay && CrittersPlay.grantAptitudeAward) {
+          CrittersPlay.grantAptitudeAward(id);
+        }
+        var apt = window.CrittersPlay && CrittersPlay.getAptitude ? CrittersPlay.getAptitude(id) : null;
         var name = id === "gus" ? "Gus" : "Betty";
-        flashUnlockToast(name);
+        flashUnlockToast(name, apt ? apt.title : "");
         showEarnModal(id);
       }
     });
@@ -212,7 +278,10 @@
         "</div>" +
         '<p class="guard-name">' + g.name + "</p>" +
         '<p class="guard-role">' + (open ? g.role : g.unlockAt + " pts") + "</p>" +
+        (open && window.CrittersPlay && CrittersPlay.hasAptitudeAward && CrittersPlay.hasAptitudeAward(g.id)
+          ? '<p class="guard-aptitude">🏅 ' + (CrittersPlay.getAptitude(g.id).title) + "</p>" : "") +
         (open && window.CrittersPlay && CrittersPlay.hasUnclaimedEarn && CrittersPlay.hasUnclaimedEarn(g.id)
+          && (!CrittersPlay.canClaimSpinToday || CrittersPlay.canClaimSpinToday())
           ? '<p class="guard-earn-chip">Spin ready</p>' : "");
       btn.addEventListener("click", function () {
         if (!open) return;
@@ -222,6 +291,7 @@
         renderPicker();
         if (blurbEl) blurbEl.textContent = "Playing as " + g.name + " — " + g.blurb;
         startBtn.textContent = running ? startBtn.textContent : "Start watch — " + g.name;
+        updateCapNote();
       });
       pickerEl.appendChild(btn);
     });
@@ -406,15 +476,27 @@
     var best = CrittersPlay.setBest(KEY, state.score);
     bestEl.textContent = String(best);
     unlockIfNeeded(state.score);
+    var g = currentGuard();
+    var apt = window.CrittersPlay && CrittersPlay.getAptitude ? CrittersPlay.getAptitude(g.id) : null;
+    if (g.id === "sophie" && window.CrittersPlay && CrittersPlay.grantAptitudeAward) {
+      CrittersPlay.grantAptitudeAward("sophie");
+    }
     overlayTitle.textContent = "Shift over";
-    overlayMsg.textContent = "Score " + state.score + " · Best " + best + ". Herd needs you — try again.";
-    startBtn.textContent = "Guard again as " + currentGuard().name;
+    var awardLine = apt ? (" · 🏅 " + apt.title) : "";
+    overlayMsg.textContent = "Score " + state.score + " · Best " + best + awardLine + ". Text HIGH SCORE to 914-263-1311 — or try again.";
+    startBtn.textContent = "Guard again as " + g.name;
     overlay.classList.remove("hidden");
     if (pickerEl) pickerEl.style.display = "";
     if (blurbEl) blurbEl.style.display = "";
     if (controlsEl) controlsEl.style.display = "none";
     if (hintEl) hintEl.style.visibility = "hidden";
     renderPicker();
+    updateCapNote();
+    /* Sophie win path: aptitude + HIGH SCORE (no spin token) — once per session */
+    if (g.id === "sophie" && !sophieAwardShown && state.score > 0) {
+      sophieAwardShown = true;
+      setTimeout(function () { showEarnModal("sophie"); }, 350);
+    }
   }
 
   function toCanvas(e) {
@@ -622,6 +704,17 @@
   }
 
   function start() {
+    var g = currentGuard();
+    if (window.CrittersPlay && CrittersPlay.canStartPlay && !CrittersPlay.canStartPlay(g.id)) {
+      setMsg(g.name + " is resting — " + CrittersPlay.PLAYS_PER_CHAR_PER_DAY + " plays/day used. Try another dog or come back tomorrow.");
+      updateCapNote();
+      return;
+    }
+    if (window.CrittersPlay && CrittersPlay.consumePlay && !CrittersPlay.consumePlay(g.id)) {
+      setMsg(g.name + " is resting — daily play cap reached.");
+      updateCapNote();
+      return;
+    }
     resetState();
     overlay.classList.add("hidden");
     running = true;
@@ -631,8 +724,9 @@
     if (controlsEl) controlsEl.style.display = "grid";
     if (hintEl) {
       hintEl.style.visibility = "visible";
-      hintEl.textContent = "Drag " + currentGuard().name + " · WASD · Space / Bark";
+      hintEl.textContent = "Drag " + g.name + " · WASD · Space / Bark";
     }
+    updateCapNote();
   }
 
   startBtn.addEventListener("click", start);
@@ -706,6 +800,7 @@
   loadDog();
   renderPicker();
   updateClaimChip();
+  updateCapNote();
   resetState();
   if (controlsEl) controlsEl.style.display = "none";
   draw();

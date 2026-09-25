@@ -36,28 +36,30 @@
         <div class="hud-stat"><span class="hud-label">Lives</span><span class="hud-value tabular" id="lives">5</span></div>
         <div class="hud-stat"><span class="hud-label">Best</span><span class="hud-value tabular" id="best">0</span></div>
       </div>
+      <p class="cap-note text-xs muted" id="cap-note" aria-live="polite"></p>
       <div class="game-stage" id="stage">
         <canvas id="canvas" width="340" height="440" aria-label="Evade Elon game"></canvas>
         <div class="game-overlay" id="overlay">
           <p class="overlay-emoji" aria-hidden="true">🦆</p>
           <h2 id="overlay-title">Evade Elon</h2>
-          <p id="overlay-msg">Drag to move. Get close and tap to feed Kneepads, Sassy, mRNA, Jelly, Piggy &amp; crew. Elon Muscovy steals your grain if he catches you. Refill at the GRAIN trough.</p>
+          <p id="overlay-msg">Drag to move. Get close and tap to feed Kneepads, Sassy, mRNA, Jelly, Piggy &amp; crew. Elon Muscovy steals your grain if he catches you. Refill at the GRAIN trough. Score 300 → Grain Guard award + free spin.</p>
           <button type="button" class="btn btn-primary" id="start-btn">Start feeding</button>
         </div>
       </div>
-      <p class="game-hint" id="hint">Drag to run · tap near a hungry animal to feed · refill at GRAIN · score 300 → free Wheel spin</p>
+      <p class="game-hint" id="hint">Drag to run · tap near a hungry animal to feed · refill at GRAIN · score 300 → award + spin</p>
       <div class="claim-chip-bar hidden" id="claim-chip" aria-live="polite"></div>
     </div>
   </main>
 </div>
 <div class="earn-modal hidden" id="earn-modal" aria-hidden="true" role="dialog" aria-labelledby="earn-title">
   <div class="earn-modal-card">
-    <p class="earn-modal-emoji" aria-hidden="true">🎡</p>
-    <h2 id="earn-title">You earned a spin — claim it</h2>
-    <p id="earn-body" class="earn-modal-body">Hit 300 on Evade Elon. Spin now on this device — or text GOAT from the field / QR path.</p>
+    <p class="earn-modal-emoji" aria-hidden="true">🏅</p>
+    <p class="aptitude-badge" id="earn-aptitude" hidden></p>
+    <h2 id="earn-title">Awarded: Grain Guard</h2>
+    <p id="earn-body" class="earn-modal-body">Hit 300 on Evade Elon. Text HIGH SCORE to 914-263-1311 with your screenshot.</p>
     <div class="earn-modal-actions">
-      <a class="btn btn-primary btn-block" id="earn-wheel" href="https://onchainoffgrid-hub.github.io/critters-on-call/wheel.html?earn=elon" rel="noopener">🎡 Spin now</a>
-      <a class="btn btn-outline btn-block" id="earn-sms" href="sms:9142631311?&body=GOAT">Text GOAT to claim</a>
+      <a class="btn btn-primary btn-block" id="earn-sms" href="sms:9142631311?&body=HIGH%20SCORE">Text HIGH SCORE to 914-263-1311</a>
+      <a class="btn btn-outline btn-block" id="earn-wheel" href="https://onchainoffgrid-hub.github.io/critters-on-call/wheel.html?earn=elon" rel="noopener" hidden>🎡 Claim free spin</a>
       <button type="button" class="btn btn-ghost btn-block" id="earn-keep">Keep playing</button>
     </div>
   </div>

@@ -38,16 +38,28 @@
   var EARN_SCORE = 300;
   var EARN_ID = "elon";
   var earnModal = document.getElementById("earn-modal");
+  var earnTitle = document.getElementById("earn-title");
+  var earnBody = document.getElementById("earn-body");
   var earnWheel = document.getElementById("earn-wheel");
   var earnSms = document.getElementById("earn-sms");
   var earnKeep = document.getElementById("earn-keep");
+  var earnAptitude = document.getElementById("earn-aptitude");
   var claimChip = document.getElementById("claim-chip");
+  var capNote = document.getElementById("cap-note");
   var earnShownThisRun = false;
   var pausedForEarn = false;
 
+  function updateCapNote() {
+    if (!capNote || !window.CrittersPlay || !CrittersPlay.playsRemainingToday) return;
+    var left = CrittersPlay.playsRemainingToday(EARN_ID);
+    capNote.textContent = "Evade Elon: " + left + " play" + (left === 1 ? "" : "s") + " left today (max " + CrittersPlay.PLAYS_PER_CHAR_PER_DAY + "/day)";
+  }
+
   function updateClaimChip() {
     if (!claimChip || !window.CrittersPlay) return;
-    var unclaimed = CrittersPlay.getUnclaimedEarns ? CrittersPlay.getUnclaimedEarns() : [];
+    var unclaimed = CrittersPlay.getClaimableEarnsToday
+      ? CrittersPlay.getClaimableEarnsToday()
+      : (CrittersPlay.getUnclaimedEarns ? CrittersPlay.getUnclaimedEarns() : []);
     var mine = unclaimed.filter(function (e) { return e && e.dog === EARN_ID; });
     if (!mine.length) {
       claimChip.classList.add("hidden");
@@ -59,19 +71,44 @@
     var a = document.createElement("a");
     a.className = "claim-chip-link";
     a.href = CrittersPlay.wheelEarnUrl(EARN_ID);
-    a.textContent = "You earned a spin — claim it";
+    a.textContent = "Spin ready · Evade Elon";
     claimChip.appendChild(a);
   }
 
   function showEarnModal() {
     if (!earnModal || !window.CrittersPlay) return;
-    if (earnWheel) {
-      earnWheel.textContent = "🎡 Spin now";
-      earnWheel.href = CrittersPlay.wheelEarnUrl(EARN_ID);
+    var apt = CrittersPlay.getAptitude ? CrittersPlay.getAptitude(EARN_ID) : null;
+    if (CrittersPlay.grantAptitudeAward) CrittersPlay.grantAptitudeAward(EARN_ID);
+    var score = state ? state.score : EARN_SCORE;
+    var unclaimed = CrittersPlay.hasUnclaimedEarn && CrittersPlay.hasUnclaimedEarn(EARN_ID);
+    var canDay = !CrittersPlay.canClaimSpinToday || CrittersPlay.canClaimSpinToday();
+    var spinReady = !!(unclaimed && canDay);
+
+    if (earnAptitude) {
+      earnAptitude.hidden = false;
+      earnAptitude.textContent = "🏅 " + (apt ? apt.title : "Grain Guard");
+    }
+    if (earnTitle) earnTitle.textContent = "Awarded: " + (apt ? apt.title : "Grain Guard");
+    if (earnBody) {
+      var body = "Hit " + EARN_SCORE + " on Evade Elon. Screenshot and text HIGH SCORE to 914-263-1311.";
+      if (spinReady) body += " You also earned a free Wheel spin (1 claim/day).";
+      else if (unclaimed && !canDay) body += " Spin claim used today — try again tomorrow.";
+      earnBody.textContent = body;
     }
     if (earnSms) {
-      earnSms.textContent = "Text GOAT to claim";
-      earnSms.href = CrittersPlay.smsHref(CrittersPlay.PRIZE_SMS_KEYWORD || "GOAT");
+      earnSms.textContent = "Text HIGH SCORE to 914-263-1311";
+      earnSms.href = CrittersPlay.gameSmsHref
+        ? CrittersPlay.gameSmsHref(score, EARN_ID)
+        : CrittersPlay.smsHref(CrittersPlay.GAME_SMS_KEYWORD || "HIGH SCORE");
+    }
+    if (earnWheel) {
+      if (spinReady) {
+        earnWheel.hidden = false;
+        earnWheel.textContent = "🎡 Claim free spin";
+        earnWheel.href = CrittersPlay.wheelEarnUrl(EARN_ID);
+      } else {
+        earnWheel.hidden = true;
+      }
     }
     if (running && state && !state.over) {
       pausedForEarn = true;
@@ -94,6 +131,7 @@
       last = 0;
     }
     updateClaimChip();
+    updateCapNote();
   }
 
   function maybeGrantEarn(score) {
@@ -109,10 +147,17 @@
     }
     var existing = CrittersPlay.getEarnForDog ? CrittersPlay.getEarnForDog(EARN_ID) : null;
     if (existing && existing.claimed) {
+      /* already claimed this earn token — still show aptitude + HIGH SCORE once per run */
+      if (!earnShownThisRun && CrittersPlay.hasAptitudeAward && !CrittersPlay.hasAptitudeAward(EARN_ID)) {
+        earnShownThisRun = true;
+        if (CrittersPlay.grantAptitudeAward) CrittersPlay.grantAptitudeAward(EARN_ID);
+        showEarnModal();
+      }
       updateClaimChip();
-      return; /* one earn per device for this gate */
+      return;
     }
     CrittersPlay.grantWheelSpin(EARN_ID);
+    if (CrittersPlay.grantAptitudeAward) CrittersPlay.grantAptitudeAward(EARN_ID);
     if (!earnShownThisRun) {
       earnShownThisRun = true;
       showEarnModal();
@@ -308,10 +353,11 @@
     var best = CrittersPlay.setBest(KEY, state.score);
     bestEl.textContent = String(best);
     overlayTitle.textContent = "Elon ate the shift";
-    overlayMsg.textContent = "Score " + state.score + " · Best " + best + ". The Muscovy won this round — refill and try again.";
+    overlayMsg.textContent = "Score " + state.score + " · Best " + best + ". Text HIGH SCORE to 914-263-1311 — or refill and try again.";
     startBtn.textContent = "Dodge again";
     overlay.classList.remove("hidden");
     if (hintEl) hintEl.style.visibility = "hidden";
+    updateCapNote();
   }
 
   function update(dt) {
@@ -434,12 +480,22 @@
   }
 
   function start() {
+    if (window.CrittersPlay && CrittersPlay.canStartPlay && !CrittersPlay.canStartPlay(EARN_ID)) {
+      if (overlayMsg) overlayMsg.textContent = "Daily play cap reached for Evade Elon (" + CrittersPlay.PLAYS_PER_CHAR_PER_DAY + "/day). Come back tomorrow.";
+      updateCapNote();
+      return;
+    }
+    if (window.CrittersPlay && CrittersPlay.consumePlay && !CrittersPlay.consumePlay(EARN_ID)) {
+      updateCapNote();
+      return;
+    }
     resetState();
     earnShownThisRun = false;
     overlay.classList.add("hidden");
     running = true;
     last = 0;
     if (hintEl) hintEl.style.visibility = "visible";
+    updateCapNote();
   }
 
   startBtn.addEventListener("click", start);
@@ -481,6 +537,7 @@
 
   resetState();
   updateClaimChip();
+  updateCapNote();
   draw();
   requestAnimationFrame(loop);
 })();
