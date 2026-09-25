@@ -45,11 +45,25 @@
           <button type="button" class="btn btn-primary" id="start-btn">Start feeding</button>
         </div>
       </div>
-      <p class="game-hint" id="hint">Drag to run · tap near a hungry animal to feed · refill at GRAIN</p>
+      <p class="game-hint" id="hint">Drag to run · tap near a hungry animal to feed · refill at GRAIN · score 300 → free Wheel spin</p>
+      <div class="claim-chip-bar hidden" id="claim-chip" aria-live="polite"></div>
     </div>
   </main>
 </div>
+<div class="earn-modal hidden" id="earn-modal" aria-hidden="true" role="dialog" aria-labelledby="earn-title">
+  <div class="earn-modal-card">
+    <p class="earn-modal-emoji" aria-hidden="true">🎡</p>
+    <h2 id="earn-title">You earned a spin — claim it</h2>
+    <p id="earn-body" class="earn-modal-body">Hit 300 on Evade Elon. Spin now on this device — or text GOAT from the field / QR path.</p>
+    <div class="earn-modal-actions">
+      <a class="btn btn-primary btn-block" id="earn-wheel" href="https://onchainoffgrid-hub.github.io/critters-on-call/wheel.html?earn=elon" rel="noopener">🎡 Spin now</a>
+      <a class="btn btn-outline btn-block" id="earn-sms" href="sms:9142631311?&body=GOAT">Text GOAT to claim</a>
+      <button type="button" class="btn btn-ghost btn-block" id="earn-keep">Keep playing</button>
+    </div>
+  </div>
+</div>
 <script src="js/scores.js"></script>
+<script src="js/earn-spin.js"></script>
 <script src="js/evade-elon.js"></script>
 </body>
 </html>

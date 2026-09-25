@@ -87,7 +87,7 @@
   var pendingEarnDog = null;
 
   function flashUnlockToast(name) {
-    setMsg(name + " unlocked! Free Wheel spin ready.");
+    setMsg(name + " unlocked! You earned a spin — claim it.");
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(function () {
       if (running && state && !state.over) setMsg(currentGuard().name + " is on watch");
@@ -101,18 +101,19 @@
     var name = dog === "gus" ? "Gus" : "Betty";
     var kw = dog.toUpperCase();
     pendingEarnDog = dog;
-    if (earnTitle) earnTitle.textContent = name + " unlocked!";
+    if (earnTitle) earnTitle.textContent = "You earned a spin — claim it";
     if (earnBody) {
       earnBody.textContent =
-        "Text a screenshot of this screen, or text " + kw +
-        " to 914-263-1311. Then claim your free prize Wheel spin.";
-    }
-    if (earnSms) {
-      earnSms.textContent = "Text " + kw;
-      earnSms.href = CrittersPlay.smsHref(kw);
+        name + " unlocked. Spin the prize wheel now on this device — or text " +
+        kw + " to 914-263-1311 for the field / QR path.";
     }
     if (earnWheel) {
+      earnWheel.textContent = "🎡 Spin now";
       earnWheel.href = CrittersPlay.wheelEarnUrl(dog);
+    }
+    if (earnSms) {
+      earnSms.textContent = "Text " + kw + " to claim";
+      earnSms.href = CrittersPlay.smsHref(kw);
     }
     if (running && state && !state.over) {
       pausedForEarn = true;
@@ -155,7 +156,7 @@
       var a = document.createElement("a");
       a.className = "claim-chip-link";
       a.href = CrittersPlay.wheelEarnUrl(dog);
-      a.textContent = "Claim spin · " + name;
+      a.textContent = "You earned a spin — claim it · " + name;
       claimChip.appendChild(a);
     });
   }
@@ -212,7 +213,7 @@
         '<p class="guard-name">' + g.name + "</p>" +
         '<p class="guard-role">' + (open ? g.role : g.unlockAt + " pts") + "</p>" +
         (open && window.CrittersPlay && CrittersPlay.hasUnclaimedEarn && CrittersPlay.hasUnclaimedEarn(g.id)
-          ? '<p class="guard-earn-chip">Claim spin</p>' : "");
+          ? '<p class="guard-earn-chip">Spin ready</p>' : "");
       btn.addEventListener("click", function () {
         if (!open) return;
         selectedId = g.id;
@@ -696,7 +697,7 @@
         try { localStorage.setItem(UNLOCK_KEY, JSON.stringify(unlocked)); } catch (e2) {}
       }
       if (demo === "gus" || demo === "betty") {
-        if (window.CrittersPlay && CrittersPlay.grantWheelSpin) CrittersPlay.grantWheelSpin(demo);
+        if (window.CrittersPlay && CrittersPlay.grantWheelSpin) CrittersPlay.grantWheelSpin(demo, { fresh: true });
         setTimeout(function () { showEarnModal(demo); }, 200);
       }
     }

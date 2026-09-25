@@ -35,6 +35,91 @@
 
   bestEl.textContent = CrittersPlay.getBest(KEY);
 
+  var EARN_SCORE = 300;
+  var EARN_ID = "elon";
+  var earnModal = document.getElementById("earn-modal");
+  var earnWheel = document.getElementById("earn-wheel");
+  var earnSms = document.getElementById("earn-sms");
+  var earnKeep = document.getElementById("earn-keep");
+  var claimChip = document.getElementById("claim-chip");
+  var earnShownThisRun = false;
+  var pausedForEarn = false;
+
+  function updateClaimChip() {
+    if (!claimChip || !window.CrittersPlay) return;
+    var unclaimed = CrittersPlay.getUnclaimedEarns ? CrittersPlay.getUnclaimedEarns() : [];
+    var mine = unclaimed.filter(function (e) { return e && e.dog === EARN_ID; });
+    if (!mine.length) {
+      claimChip.classList.add("hidden");
+      claimChip.innerHTML = "";
+      return;
+    }
+    claimChip.classList.remove("hidden");
+    claimChip.innerHTML = "";
+    var a = document.createElement("a");
+    a.className = "claim-chip-link";
+    a.href = CrittersPlay.wheelEarnUrl(EARN_ID);
+    a.textContent = "You earned a spin — claim it";
+    claimChip.appendChild(a);
+  }
+
+  function showEarnModal() {
+    if (!earnModal || !window.CrittersPlay) return;
+    if (earnWheel) {
+      earnWheel.textContent = "🎡 Spin now";
+      earnWheel.href = CrittersPlay.wheelEarnUrl(EARN_ID);
+    }
+    if (earnSms) {
+      earnSms.textContent = "Text GOAT to claim";
+      earnSms.href = CrittersPlay.smsHref(CrittersPlay.PRIZE_SMS_KEYWORD || "GOAT");
+    }
+    if (running && state && !state.over) {
+      pausedForEarn = true;
+      running = false;
+    } else {
+      pausedForEarn = false;
+    }
+    earnModal.classList.remove("hidden");
+    earnModal.setAttribute("aria-hidden", "false");
+  }
+
+  function hideEarnModal() {
+    if (!earnModal) return;
+    earnModal.classList.add("hidden");
+    earnModal.setAttribute("aria-hidden", "true");
+    var resume = pausedForEarn && state && !state.over;
+    pausedForEarn = false;
+    if (resume) {
+      running = true;
+      last = 0;
+    }
+    updateClaimChip();
+  }
+
+  function maybeGrantEarn(score) {
+    if (!window.CrittersPlay || !CrittersPlay.grantWheelSpin) return;
+    if (score < EARN_SCORE) return;
+    if (CrittersPlay.hasUnclaimedEarn && CrittersPlay.hasUnclaimedEarn(EARN_ID)) {
+      if (!earnShownThisRun) {
+        earnShownThisRun = true;
+        showEarnModal();
+      }
+      updateClaimChip();
+      return;
+    }
+    var existing = CrittersPlay.getEarnForDog ? CrittersPlay.getEarnForDog(EARN_ID) : null;
+    if (existing && existing.claimed) {
+      updateClaimChip();
+      return; /* one earn per device for this gate */
+    }
+    CrittersPlay.grantWheelSpin(EARN_ID);
+    if (!earnShownThisRun) {
+      earnShownThisRun = true;
+      showEarnModal();
+    }
+    updateClaimChip();
+  }
+
   function freshCrew() {
     return CREW.map(function (c) {
       return { id: c.id, emoji: c.emoji, name: c.name, x: c.x, y: c.y, fed: false, bob: Math.random() * 6 };
@@ -186,6 +271,7 @@
         if (fedEl) fedEl.textContent = fedCount + "/" + CREW.length;
         CrittersPlay.setBest(KEY, t.score);
         bestEl.textContent = String(CrittersPlay.getBest(KEY));
+        maybeGrantEarn(t.score);
         t.msg = "Fed " + n.name + "!";
         t.msgT = 1;
         if (t.crew.every(function (c) { return c.fed; })) {
@@ -198,6 +284,7 @@
           if (fedEl) fedEl.textContent = "0/" + CREW.length;
           CrittersPlay.setBest(KEY, t.score);
           bestEl.textContent = String(CrittersPlay.getBest(KEY));
+          maybeGrantEarn(t.score);
           t.msg = "Wave " + t.wave + " — Elon is hungrier!";
           t.msgT = 1.6;
         }
@@ -348,6 +435,7 @@
 
   function start() {
     resetState();
+    earnShownThisRun = false;
     overlay.classList.add("hidden");
     running = true;
     last = 0;
@@ -384,7 +472,15 @@
   canvas.addEventListener("pointerup", function () { if (state) state.pointer = null; });
   canvas.addEventListener("pointercancel", function () { if (state) state.pointer = null; });
 
+  if (earnKeep) earnKeep.addEventListener("click", hideEarnModal);
+  if (earnModal) {
+    earnModal.addEventListener("click", function (e) {
+      if (e.target === earnModal) hideEarnModal();
+    });
+  }
+
   resetState();
+  updateClaimChip();
   draw();
   requestAnimationFrame(loop);
 })();

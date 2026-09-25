@@ -3,10 +3,12 @@
   var CP = global.CrittersPlay || (global.CrittersPlay = {});
   var EARN_KEY = "coc_earned_wheel_spins_v1";
   var SMS_NUMBER = "9142631311";
+  var VALID = { gus: true, betty: true, elon: true };
 
   CP.WHEEL_URL = "https://onchainoffgrid-hub.github.io/critters-on-call/wheel.html";
   CP.SMS_NUMBER = SMS_NUMBER;
   CP.EARN_KEY = EARN_KEY;
+  CP.PRIZE_SMS_KEYWORD = "GOAT";
 
   function readEarns() {
     try {
@@ -24,28 +26,45 @@
     } catch (e) {}
   }
 
-  /** sms:9142631311?&body=GUS|BETTY (iOS/Android-friendly) */
+  /** sms:9142631311?&body=GUS|BETTY|GOAT (iOS/Android-friendly) */
   CP.smsHref = function (keyword) {
     return "sms:" + SMS_NUMBER + "?&body=" + encodeURIComponent(String(keyword || "").toUpperCase());
   };
 
-  CP.wheelEarnUrl = function (dogId) {
+  CP.wheelEarnUrl = function (dogId, opts) {
     var dog = String(dogId || "").toLowerCase();
-    return CP.WHEEL_URL + "?earn=" + encodeURIComponent(dog);
+    var url = CP.WHEEL_URL + "?earn=" + encodeURIComponent(dog);
+    if (opts && opts.demo) url += "&demo=1";
+    return url;
   };
 
   CP.readWheelEarns = readEarns;
 
+  CP.earnDisplayName = function (id) {
+    var k = String(id || "").toLowerCase();
+    if (k === "gus") return "Gus";
+    if (k === "betty") return "Betty";
+    if (k === "elon") return "Evade Elon";
+    return "Play";
+  };
+
   /**
-   * Append an earn record if not already granted for that dog.
-   * Returns the existing or new record, or null if dogId is invalid.
+   * Append an earn record if not already granted for that id.
+   * opts.fresh → reopen claimed earn (buzz demo / re-show).
    */
-  CP.grantWheelSpin = function (dogId) {
+  CP.grantWheelSpin = function (dogId, opts) {
     var dog = String(dogId || "").toLowerCase();
-    if (dog !== "gus" && dog !== "betty") return null;
+    if (!VALID[dog]) return null;
     var earns = readEarns();
     for (var i = 0; i < earns.length; i++) {
-      if (earns[i] && earns[i].dog === dog) return earns[i];
+      if (earns[i] && earns[i].dog === dog) {
+        if (opts && opts.fresh && earns[i].claimed) {
+          earns[i].claimed = false;
+          earns[i].at = new Date().toISOString();
+          writeEarns(earns);
+        }
+        return earns[i];
+      }
     }
     var rec = {
       id: dog + "-" + Date.now(),
