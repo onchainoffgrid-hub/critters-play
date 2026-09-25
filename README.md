@@ -2,31 +2,33 @@
 
 Sheehan Homestead · Callahan, FL
 
-Games: **Evade Elon** · **Barn Cat Defender** · **Pyrenees Guard** · **Critter Match**
+Entertaining wholesome farm games parents can hand kids — learn a little, favor to parents. Prototype #1 of a Quantic-style learn-as-you-go tech story.
 
-Sales aid (Book/Track/Spin/Gold): https://onchainoffgrid-hub.github.io/critters-on-call/
+Games: **Evade Elon** · **Barn Cat Defender** · **Pyrenees Guard** · **Critter Match**
 
 ## Live
 https://onchainoffgrid-hub.github.io/critters-play/
+
+Real website (consumer win CTA): https://www.sheehanhomestead.com/services
 
 ## Open locally
 ```bash
 python3 -m http.server 8771
 ```
 
-## Real play → text Michael (consumer path)
-Live hub: https://onchainoffgrid-hub.github.io/critters-play/
-
+## Real play → website + text Michael
 1. Open **Pyrenees Guard** as **Sophie** (Lead Guardian), or **Evade Elon**
-2. Unlock aptitude awards:
-   - Sophie → **Lead Guardian** (play a shift)
-   - Gus → **Night Scout** at score **250**
-   - Betty → **Barn Queen** at score **500**
-   - Evade Elon → **Grain Guard** at score **300**
-3. Win / unlock screen → **Text HIGH SCORE** to **914-263-1311** (screenshot / score).  
-   Deal path stays **CODE / GOAT** — do **not** use those for game wins.
-4. Optional Wheel: organic unlock still grants an earn (`?earn=gus|betty|elon`).  
-   Spin prizes = **TBD** / soft placeholders — north star is texting Michael.
+2. Unlock aptitude awards + named soft prizes:
+   - Sophie → **Lead Guardian** · prize **Farm Favor unlocked**
+   - Gus → **Night Scout** (score **250**) · prize **Mobile party scout badge**
+   - Betty → **Barn Queen** (score **500**) · prize **Barn Queen visit pass**
+   - Evade Elon → **Grain Guard** (score **300**) · prize **Grain Guard STEM spark**
+3. Win screen CTA order:
+   1. **See our services** → https://www.sheehanhomestead.com/services
+   2. **Text HIGH SCORE** to **914-263-1311** (screenshot / score)
+4. Optional Wheel: organic unlock still grants an earn (`?earn=gus|betty|elon`). Soft digital prizes, 1 claim/day, honor-system.
+
+Deal path stays **CODE / GOAT** — do **not** use those for game wins.
 
 ### Caps (localStorage, per device)
 | Cap | Value | Key |

@@ -18,6 +18,9 @@
   var SPIN_CLAIMS_PER_DAY = 1;
 
   CP.WHEEL_URL = "https://onchainoffgrid-hub.github.io/critters-on-call/wheel.html";
+  CP.SERVICES_URL = "https://www.sheehanhomestead.com/services";
+  CP.BOOKING_HELP_URL = "https://www.sheehanhomestead.com/booking-help";
+  CP.HOME_URL = "https://www.sheehanhomestead.com";
   CP.SMS_NUMBER = SMS_NUMBER;
   CP.EARN_KEY = EARN_KEY;
   CP.CAPS_KEY = CAPS_KEY;
@@ -28,11 +31,36 @@
   CP.PLAYS_PER_CHAR_PER_DAY = PLAYS_PER_CHAR_PER_DAY;
   CP.SPIN_CLAIMS_PER_DAY = SPIN_CLAIMS_PER_DAY;
 
+  /* Phase 1 soft digital prizes — honest, no fake $; win CTA → real website */
   CP.APTITUDES = {
-    sophie: { id: "sophie", title: "Lead Guardian", blurb: "Balanced watch — the farmer's dog." },
-    gus: { id: "gus", title: "Night Scout", blurb: "Fast on his feet after dark." },
-    betty: { id: "betty", title: "Barn Queen", blurb: "Bigger bark, wider reach." },
-    elon: { id: "elon", title: "Grain Guard", blurb: "Fed the crew. Dodged the Muscovy." }
+    sophie: {
+      id: "sophie",
+      title: "Lead Guardian",
+      blurb: "Balanced watch — the farmer's dog.",
+      prize: "Farm Favor unlocked",
+      tip: "Wholesome farm game parents can hand kids — learn a little, then peek at visit options on Services."
+    },
+    gus: {
+      id: "gus",
+      title: "Night Scout",
+      blurb: "Fast on his feet after dark.",
+      prize: "Mobile party scout badge",
+      tip: "Explore the mobile petting zoo on our Services page."
+    },
+    betty: {
+      id: "betty",
+      title: "Barn Queen",
+      blurb: "Bigger bark, wider reach.",
+      prize: "Barn Queen visit pass",
+      tip: "Visit Us / farm experiences — see what's open on Services."
+    },
+    elon: {
+      id: "elon",
+      title: "Grain Guard",
+      blurb: "Fed the crew. Dodged the Muscovy.",
+      prize: "Grain Guard STEM spark",
+      tip: "Learning & STEM-on-farm flavor — explore on Services."
+    }
   };
 
   function todayKey() {

@@ -44,6 +44,8 @@
   var earnSms = document.getElementById("earn-sms");
   var earnKeep = document.getElementById("earn-keep");
   var earnAptitude = document.getElementById("earn-aptitude");
+  var earnPrize = document.getElementById("earn-prize");
+  var earnServices = document.getElementById("earn-services");
   var claimChip = document.getElementById("claim-chip");
   var capNote = document.getElementById("cap-note");
   var earnShownThisRun = false;
@@ -83,17 +85,30 @@
     var unclaimed = CrittersPlay.hasUnclaimedEarn && CrittersPlay.hasUnclaimedEarn(EARN_ID);
     var canDay = !CrittersPlay.canClaimSpinToday || CrittersPlay.canClaimSpinToday();
     var spinReady = !!(unclaimed && canDay);
+    var prize = apt && apt.prize ? apt.prize : "Grain Guard STEM spark";
+    var tip = apt && apt.tip ? apt.tip : "Learning & STEM-on-farm flavor — explore on Services.";
 
     if (earnAptitude) {
       earnAptitude.hidden = false;
       earnAptitude.textContent = "🏅 " + (apt ? apt.title : "Grain Guard");
     }
     if (earnTitle) earnTitle.textContent = "Awarded: " + (apt ? apt.title : "Grain Guard");
+    if (earnPrize) {
+      earnPrize.hidden = false;
+      earnPrize.textContent = "🎁 " + prize;
+    }
     if (earnBody) {
-      var body = "Hit " + EARN_SCORE + " on Evade Elon. Screenshot and text HIGH SCORE to 914-263-1311.";
-      if (spinReady) body += " You also earned a free Wheel spin (1 claim/day).";
+      var body = "Hit " + EARN_SCORE + " on Evade Elon. " + tip;
+      if (spinReady) body += " Optional: free Wheel spin (1 claim/day, honor-system).";
       else if (unclaimed && !canDay) body += " Spin claim used today — try again tomorrow.";
       earnBody.textContent = body;
+    }
+    if (earnServices) {
+      earnServices.hidden = false;
+      earnServices.textContent = "See our services";
+      earnServices.href = CrittersPlay.SERVICES_URL || "https://www.sheehanhomestead.com/services";
+      earnServices.target = "_blank";
+      earnServices.rel = "noopener";
     }
     if (earnSms) {
       earnSms.textContent = "Text HIGH SCORE to 914-263-1311";
@@ -353,7 +368,7 @@
     var best = CrittersPlay.setBest(KEY, state.score);
     bestEl.textContent = String(best);
     overlayTitle.textContent = "Elon ate the shift";
-    overlayMsg.textContent = "Score " + state.score + " · Best " + best + ". Text HIGH SCORE to 914-263-1311 — or refill and try again.";
+    overlayMsg.textContent = "Score " + state.score + " · Best " + best + ". See our services · or text HIGH SCORE — or refill and try again.";
     startBtn.textContent = "Dodge again";
     overlay.classList.remove("hidden");
     if (hintEl) hintEl.style.visibility = "hidden";

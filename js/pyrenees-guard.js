@@ -83,6 +83,8 @@
   var earnKeep = document.getElementById("earn-keep");
   var claimChip = document.getElementById("claim-chip");
   var earnAptitude = document.getElementById("earn-aptitude");
+  var earnPrize = document.getElementById("earn-prize");
+  var earnServices = document.getElementById("earn-services");
   var capNote = document.getElementById("cap-note");
   var toastTimer = null;
   var pausedForEarn = false;
@@ -115,6 +117,8 @@
     if (apt && CrittersPlay.grantAptitudeAward) CrittersPlay.grantAptitudeAward(dog);
     var name = CrittersPlay.earnDisplayName ? CrittersPlay.earnDisplayName(dog) : dog;
     var title = apt ? apt.title : "";
+    var prize = apt && apt.prize ? apt.prize : "";
+    var tip = apt && apt.tip ? apt.tip : "Entertaining farm games — learn a little. Parents: see Services.";
     var score = typeof opts.score === "number" ? opts.score : (state ? state.score : 0);
     pendingEarnDog = dog;
 
@@ -130,13 +134,29 @@
     if (earnTitle) {
       earnTitle.textContent = title ? ("Awarded: " + title) : "Nice run!";
     }
+    if (earnPrize) {
+      if (prize) {
+        earnPrize.hidden = false;
+        earnPrize.textContent = "🎁 " + prize;
+      } else {
+        earnPrize.hidden = true;
+        earnPrize.textContent = "";
+      }
+    }
     if (earnBody) {
       var body = name + (title ? (" — " + title + ".") : ".");
       if (opts.unlocked) body += " Character unlocked.";
-      body += " Screenshot your score and text HIGH SCORE to 914-263-1311.";
-      if (opts.spinReady) body += " You also earned a free Wheel spin (1 claim/day).";
+      body += " " + tip;
+      if (opts.spinReady) body += " Optional: free Wheel spin (1 claim/day, honor-system).";
       else if (opts.spinDeferred) body += " Spin claim used today — try again tomorrow.";
       earnBody.textContent = body;
+    }
+    if (earnServices) {
+      earnServices.hidden = false;
+      earnServices.textContent = "See our services";
+      earnServices.href = CrittersPlay.SERVICES_URL || "https://www.sheehanhomestead.com/services";
+      earnServices.target = "_blank";
+      earnServices.rel = "noopener";
     }
     if (earnSms) {
       earnSms.textContent = "Text HIGH SCORE to 914-263-1311";
@@ -483,7 +503,7 @@
     }
     overlayTitle.textContent = "Shift over";
     var awardLine = apt ? (" · 🏅 " + apt.title) : "";
-    overlayMsg.textContent = "Score " + state.score + " · Best " + best + awardLine + ". Text HIGH SCORE to 914-263-1311 — or try again.";
+    overlayMsg.textContent = "Score " + state.score + " · Best " + best + awardLine + ". See our services · or text HIGH SCORE — or try again.";
     startBtn.textContent = "Guard again as " + g.name;
     overlay.classList.remove("hidden");
     if (pickerEl) pickerEl.style.display = "";
