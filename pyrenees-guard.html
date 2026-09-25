@@ -55,10 +55,24 @@
         <button type="button" class="btn btn-ghost" id="nudge-c">Center</button>
       </div>
       <p class="game-hint" id="hint" style="visibility:hidden">Drag Sophie · WASD · Space / Bark</p>
+      <div class="claim-chip-bar hidden" id="claim-chip" aria-live="polite"></div>
     </div>
   </main>
 </div>
+<div class="earn-modal hidden" id="earn-modal" aria-hidden="true" role="dialog" aria-labelledby="earn-title">
+  <div class="earn-modal-card">
+    <p class="earn-modal-emoji" aria-hidden="true">🐕</p>
+    <h2 id="earn-title">Dog unlocked!</h2>
+    <p id="earn-body" class="earn-modal-body">Text a screenshot, or text the dog name to 914-263-1311. Then claim your free prize Wheel spin.</p>
+    <div class="earn-modal-actions">
+      <a class="btn btn-primary btn-block" id="earn-sms" href="sms:9142631311?&body=GUS">Text GUS</a>
+      <a class="btn btn-outline btn-block" id="earn-wheel" href="https://onchainoffgrid-hub.github.io/critters-on-call/wheel.html?earn=gus" target="_blank" rel="noopener">Claim Wheel spin</a>
+      <button type="button" class="btn btn-ghost btn-block" id="earn-keep">Keep playing</button>
+    </div>
+  </div>
+</div>
 <script src="js/scores.js"></script>
+<script src="js/earn-spin.js"></script>
 <script src="js/pyrenees-guard.js"></script>
 </body>
 </html>

@@ -75,14 +75,112 @@
     return g.unlockAt === 0 || unlocked.indexOf(g.id) >= 0 || best >= g.unlockAt;
   }
 
+  var earnModal = document.getElementById("earn-modal");
+  var earnTitle = document.getElementById("earn-title");
+  var earnBody = document.getElementById("earn-body");
+  var earnSms = document.getElementById("earn-sms");
+  var earnWheel = document.getElementById("earn-wheel");
+  var earnKeep = document.getElementById("earn-keep");
+  var claimChip = document.getElementById("claim-chip");
+  var toastTimer = null;
+  var pausedForEarn = false;
+  var pendingEarnDog = null;
+
+  function flashUnlockToast(name) {
+    setMsg(name + " unlocked! Free Wheel spin ready.");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      if (running && state && !state.over) setMsg(currentGuard().name + " is on watch");
+    }, 3200);
+  }
+
+  function showEarnModal(dogId) {
+    if (!earnModal || !window.CrittersPlay) return;
+    var dog = String(dogId || "").toLowerCase();
+    if (dog !== "gus" && dog !== "betty") return;
+    var name = dog === "gus" ? "Gus" : "Betty";
+    var kw = dog.toUpperCase();
+    pendingEarnDog = dog;
+    if (earnTitle) earnTitle.textContent = name + " unlocked!";
+    if (earnBody) {
+      earnBody.textContent =
+        "Text a screenshot of this screen, or text " + kw +
+        " to 914-263-1311. Then claim your free prize Wheel spin.";
+    }
+    if (earnSms) {
+      earnSms.textContent = "Text " + kw;
+      earnSms.href = CrittersPlay.smsHref(kw);
+    }
+    if (earnWheel) {
+      earnWheel.href = CrittersPlay.wheelEarnUrl(dog);
+    }
+    if (running && state && !state.over) {
+      pausedForEarn = true;
+      running = false;
+    } else {
+      pausedForEarn = false;
+    }
+    earnModal.classList.remove("hidden");
+    earnModal.setAttribute("aria-hidden", "false");
+  }
+
+  function hideEarnModal() {
+    if (!earnModal) return;
+    earnModal.classList.add("hidden");
+    earnModal.setAttribute("aria-hidden", "true");
+    var resume = pausedForEarn && state && !state.over;
+    pausedForEarn = false;
+    pendingEarnDog = null;
+    if (resume) {
+      running = true;
+      last = 0;
+      setMsg(currentGuard().name + " is back on watch");
+    }
+    updateClaimChip();
+  }
+
+  function updateClaimChip() {
+    if (!claimChip || !window.CrittersPlay) return;
+    var unclaimed = CrittersPlay.getUnclaimedEarns ? CrittersPlay.getUnclaimedEarns() : [];
+    if (!unclaimed.length) {
+      claimChip.classList.add("hidden");
+      claimChip.innerHTML = "";
+      return;
+    }
+    claimChip.classList.remove("hidden");
+    claimChip.innerHTML = "";
+    unclaimed.forEach(function (rec) {
+      var dog = rec.dog;
+      var name = dog === "gus" ? "Gus" : "Betty";
+      var a = document.createElement("a");
+      a.className = "claim-chip-link";
+      a.href = CrittersPlay.wheelEarnUrl(dog);
+      a.textContent = "Claim spin · " + name;
+      claimChip.appendChild(a);
+    });
+  }
+
   function unlockIfNeeded(score) {
+    var newly = [];
     GUARDS.forEach(function (g) {
       if (score >= g.unlockAt && unlocked.indexOf(g.id) < 0) {
         unlocked.push(g.id);
+        newly.push(g.id);
         try { localStorage.setItem(UNLOCK_KEY, JSON.stringify(unlocked)); } catch (e) {}
       }
     });
+    newly.forEach(function (id) {
+      if (id === "gus" || id === "betty") {
+        if (window.CrittersPlay && CrittersPlay.grantWheelSpin) {
+          CrittersPlay.grantWheelSpin(id);
+        }
+        var name = id === "gus" ? "Gus" : "Betty";
+        flashUnlockToast(name);
+        showEarnModal(id);
+      }
+    });
     renderPicker();
+    updateClaimChip();
   }
 
   function loadDog() {
@@ -112,7 +210,9 @@
         (open ? "" : '<span class="guard-lock">🔒</span>') +
         "</div>" +
         '<p class="guard-name">' + g.name + "</p>" +
-        '<p class="guard-role">' + (open ? g.role : g.unlockAt + " pts") + "</p>";
+        '<p class="guard-role">' + (open ? g.role : g.unlockAt + " pts") + "</p>" +
+        (open && window.CrittersPlay && CrittersPlay.hasUnclaimedEarn && CrittersPlay.hasUnclaimedEarn(g.id)
+          ? '<p class="guard-earn-chip">Claim spin</p>' : "");
       btn.addEventListener("click", function () {
         if (!open) return;
         selectedId = g.id;
@@ -579,8 +679,32 @@
   canvas.addEventListener("pointerup", function () { if (state) state.pointer = null; });
   canvas.addEventListener("pointercancel", function () { if (state) state.pointer = null; });
 
+  if (earnKeep) earnKeep.addEventListener("click", hideEarnModal);
+  if (earnModal) {
+    earnModal.addEventListener("click", function (e) {
+      if (e.target === earnModal) hideEarnModal();
+    });
+  }
+
+  /* Quiet QA hook: ?demoUnlock=gus|betty — not linked in UI */
+  try {
+    var demo = new URLSearchParams(location.search).get("demoUnlock");
+    if (demo) {
+      demo = String(demo).toLowerCase();
+      if ((demo === "gus" || demo === "betty") && unlocked.indexOf(demo) < 0) {
+        unlocked.push(demo);
+        try { localStorage.setItem(UNLOCK_KEY, JSON.stringify(unlocked)); } catch (e2) {}
+      }
+      if (demo === "gus" || demo === "betty") {
+        if (window.CrittersPlay && CrittersPlay.grantWheelSpin) CrittersPlay.grantWheelSpin(demo);
+        setTimeout(function () { showEarnModal(demo); }, 200);
+      }
+    }
+  } catch (eDemo) {}
+
   loadDog();
   renderPicker();
+  updateClaimChip();
   resetState();
   if (controlsEl) controlsEl.style.display = "none";
   draw();
